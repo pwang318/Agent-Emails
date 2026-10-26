@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Weekend Coverage List</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,750&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#f5f6f4; --surface:#ffffff; --ink:#1c2a2b; --muted:#5b6a6b; --line:#d9dfdd;
+  --accent:#1f6f6a; --accent-ink:#ffffff; --sun:#c98a12; --sun-soft:#fbf1dc;
+  --ok:#2c7a4b; --ok-soft:#e3f2e8; --warn:#8a6a10; --warn-soft:#f6edd2; --bad:#a3352b; --bad-soft:#f7e4e1;
+  --focus:#2b7fd0; color-scheme:light;
+  --f-display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --f-body:"Atkinson Hyperlegible",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#111a1b; --surface:#182426; --ink:#e4ecea; --muted:#9aaba9; --line:#2b3a3b;
+  --accent:#4fb3aa; --accent-ink:#0c1717; --sun:#e7b04a; --sun-soft:#2e2615;
+  --ok:#6fcf97; --ok-soft:#173022; --warn:#e2c56a; --warn-soft:#2f2914; --bad:#f08a7e; --bad-soft:#3a1d1a;
+  --focus:#7fb8f0; color-scheme:dark}}
+*{box-sizing:border-box}
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45}
+[hidden]{display:none!important}
+.wrap{max-width:880px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
+header.bar{position:sticky;top:0;z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+header .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;padding-block:14px}
+.brand{flex:1 1 220px;min-width:0}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+h1{font-family:var(--f-display);font-weight:750;font-size:24px;line-height:1.1;margin:2px 0 0;text-wrap:balance}
+.count{display:flex;align-items:baseline;gap:8px}
+.count b{font-family:var(--f-display);font-weight:750;font-size:34px;line-height:1;font-variant-numeric:tabular-nums;color:var(--accent)}
+.count span{color:var(--muted);font-size:13px;line-height:1.2}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 12px;cursor:pointer;min-height:38px}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.danger{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 40%,var(--line))}
+.btn.small{padding:5px 10px;min-height:32px;font-size:13.5px}
+.btn.link{border:0;background:none;padding:0;min-height:0;color:var(--muted);text-decoration:underline;font-size:13px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.copy-btn{font-size:15px;padding:10px 16px;min-height:44px}
+.session{width:100%;display:flex;gap:10px;justify-content:flex-end;align-items:center;font-size:13px;color:var(--muted);margin-top:-6px}
+
+main{padding-block:20px 48px;display:flex;flex-direction:column;gap:18px}
+.notice{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:14px 16px}
+.notice.err{border-color:color-mix(in srgb,var(--bad) 45%,var(--line));background:var(--bad-soft)}
+.notice h2{font-family:var(--f-display);font-size:17px;margin:0 0 4px}
+.notice p{margin:0;color:var(--muted)}
+
+.signin{max-width:440px;margin:40px auto;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:22px;display:flex;flex-direction:column;gap:14px}
+.signin h2{font-family:var(--f-display);font-size:21px;margin:0}
+.signin p{margin:0;color:var(--muted)}
+
+.review{border:1px solid color-mix(in srgb,var(--sun) 45%,var(--line));background:var(--sun-soft);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.review h2{font-family:var(--f-display);font-size:16px;margin:0}
+.flag{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:flex-start;justify-content:space-between;border-top:1px solid color-mix(in srgb,var(--sun) 25%,transparent);padding-top:10px}
+.flag:first-child{border-top:0;padding-top:0}
+.flag .txt{flex:1 1 280px;min-width:0}
+.flag .req{font-family:var(--f-mono);font-size:13.5px;word-break:break-all}
+.flag .note{color:var(--muted);font-size:13.5px;margin-top:2px}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.addform{padding:14px 16px;display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1.3fr) auto;gap:10px;align-items:end}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field label{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.field input{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:9px 11px;min-height:40px;width:100%}
+.field input:focus{border-color:var(--accent)}
+.addmsg{grid-column:1/-1;font-size:14px;margin:0;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.addmsg.err{color:var(--bad)} .addmsg.ok{color:var(--ok)}
+.addmsg:empty{display:none}
+
+.tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.search{flex:1 1 240px;position:relative;min-width:0}
+.search input{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:10px 12px 10px 36px;min-height:42px}
+.search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:16px;height:16px;stroke:var(--muted);fill:none}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;cursor:pointer;font-size:13.5px;font-variant-numeric:tabular-nums}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+
+.listhead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:10px 16px;border-bottom:1px solid var(--line);color:var(--muted);font-size:13px}
+ul.roster{list-style:none;margin:0;padding:0}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:center;padding:10px 16px;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.who{min-width:0}
+.email{font-family:var(--f-mono);font-size:14px;word-break:break-all}
+.row.inactive .email,.row.removed .email{color:var(--muted)}
+.row.removed .email{text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--bad) 60%,transparent)}
+.meta{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:13px;color:var(--muted);margin-top:3px}
+.name{color:var(--ink);font-weight:700}
+.pill{font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;padding:2px 8px}
+.pill.active{background:var(--ok-soft);color:var(--ok)}
+.pill.inactive{background:var(--warn-soft);color:var(--warn)}
+.pill.removed{background:var(--bad-soft);color:var(--bad)}
+.actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.confirm{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--bad-soft);border-radius:8px;padding:8px 10px;font-size:14px}
+.confirm.soft{background:var(--warn-soft)}
+.editname{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap}
+.editname input{flex:1 1 200px;min-width:0;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:7px 10px}
+.empty{padding:28px 16px;text-align:center;color:var(--muted)}
+.empty strong{display:block;color:var(--ink);font-family:var(--f-display);font-size:17px;margin-bottom:4px}
+
+.fallback{display:flex;flex-direction:column;gap:8px;padding:14px 16px}
+.fallback textarea{width:100%;min-height:120px;font-family:var(--f-mono);font-size:13px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);padding:10px}
+
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-weight:700;z-index:20;max-width:calc(100% - 32px)}
+footer{color:var(--muted);font-size:12.5px;text-align:center}
+
+@media (max-width:620px){
+  .addform{grid-template-columns:1fr}
+  .addform .btn{width:100%}
+  .row{grid-template-columns:1fr}
+  .actions{justify-content:flex-start}
+  h1{font-size:21px}
+  .copy-btn{flex:1 1 100%}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <div class="wrap">
+    <div class="brand">
+      <div class="eyebrow">Weekend coverage</div>
+      <h1>Weekend Coverage List</h1>
+    </div>
+    <div class="count" id="countBox" hidden aria-live="polite"><b id="activeCount">–</b><span>active<br>recipients</span></div>
+    <button class="btn primary copy-btn" id="copyBtn" hidden disabled>Copy BCC list</button>
+    <div class="session" id="sessionBar" hidden><span id="whoAmI"></span><button class="btn link" id="signOutBtn">Sign out</button></div>
+  </div>
+</header>
+
+<div class="wrap">
+<main>
+  <div id="gate" class="notice" hidden></div>
+
+  <!-- Sign-in -->
+  <form class="signin" id="signinForm" hidden novalidate>
+    <h2>Sign in</h2>
+    <p>Enter your work email. We'll send you a one-time sign-in link. Only team members on the access list can open the roster.</p>
+    <div class="field">
+      <label for="signinEmail">Work email</label>
+      <input id="signinEmail" type="email" inputmode="email" autocomplete="email" placeholder="you@company.com" required>
+    </div>
+    <button class="btn primary" id="signinBtn" type="submit">Email me a sign-in link</button>
+    <p id="signinMsg" role="status"></p>
+  </form>
+
+  <!-- App -->
+  <div id="app" hidden>
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <div id="copyFallback" class="panel" hidden>
+        <div class="fallback">
+          <strong>Copy didn't go through on this device.</strong>
+          <span style="color:var(--muted);font-size:14px">The list is selected below. Press Ctrl+C (or ⌘C), or long-press and choose Copy.</span>
+          <textarea id="fallbackText" readonly aria-label="BCC list"></textarea>
+          <div><button class="btn small" id="closeFallback">Done</button></div>
+        </div>
+      </div>
+
+      <section id="review" class="review" hidden aria-labelledby="reviewTitle">
+        <h2 id="reviewTitle">Needs review</h2>
+        <div id="flagList"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="addTitle">
+        <form class="addform" id="addForm" novalidate>
+          <div class="field">
+            <label for="addEmail" id="addTitle">Add agent email</label>
+            <input id="addEmail" type="email" inputmode="email" autocomplete="off" placeholder="agent@brokerage.com" required>
+          </div>
+          <div class="field">
+            <label for="addName">Name (optional)</label>
+            <input id="addName" type="text" autocomplete="off" placeholder="First Last">
+          </div>
+          <button class="btn primary" id="addBtn" type="submit">Add agent</button>
+          <p class="addmsg" id="addMsg" role="status"></p>
+        </form>
+      </section>
+
+      <div class="tools">
+        <div class="search">
+          <svg viewBox="0 0 24 24" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="search" type="search" placeholder="Search by email, name, or brokerage domain" aria-label="Search agents">
+        </div>
+        <div class="chips" role="group" aria-label="Filter by status">
+          <button class="chip" data-f="active" aria-pressed="true">Active <span data-c="active"></span></button>
+          <button class="chip" data-f="inactive" aria-pressed="false">Inactive <span data-c="inactive"></span></button>
+          <button class="chip" data-f="removed" aria-pressed="false">Removed <span data-c="removed"></span></button>
+          <button class="chip" data-f="all" aria-pressed="false">All <span data-c="all"></span></button>
+        </div>
+      </div>
+
+      <section class="panel" aria-label="Roster">
+        <div class="listhead"><span id="listLabel">Loading roster…</span><span>Sorted A–Z</span></div>
+        <ul class="roster" id="roster">
+          <li class="empty"><strong>Loading the roster</strong>Agents appear here once the list loads.</li>
+        </ul>
+      </section>
+
+      <footer>Changes save to the shared roster for everyone on the team. Removed and inactive agents stay on record and are left out of the BCC list.</footer>
+    </div>
+  </div>
+</main>
+</div>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
+<script>
+/* ===== SETUP: paste your Supabase project values here =====
+   Supabase dashboard > Project Settings > API.
+   The anon (public) key is designed to be visible in web pages;
+   the database security rules are what keep the roster private. */
+const SUPABASE_URL = "https://uclucbdkjqyqdvifyptx.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_gjEeEFwnF_cWhGoT6IRKoQ_dP33ijwH";
+/* ========================================================== */
+
+(()=>{
+const $=s=>document.querySelector(s);
+const state={agents:new Map(),flags:[],filter:"active",q:"",confirm:null,editing:null,me:null};
+const EMAIL_RE=/^[^\s@;,<>"]+@[^\s@;,<>"]+\.[^\s@;,<>"]{2,}$/;
+let sb=null, channel=null, reloadT=null;
+
+function fmtDate(iso){ if(!iso) return ""; const d=new Date(iso); return isNaN(d)?"":d.toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"}); }
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function byWho(e){ if(!e||e==="import") return ""; return " by "+e.split("@")[0]; }
+let toastT;
+function toast(msg){const t=$("#toast");t.textContent=msg;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2600);}
+function showGate(title,body,err){const g=$("#gate");g.className="notice"+(err?" err":"");g.innerHTML=`<h2>${esc(title)}</h2><p>${esc(body)}</p>`;g.hidden=false;}
+function hideGate(){$("#gate").hidden=true;}
+function activeList(){return [...state.agents.values()].filter(a=>a.status==="active").map(a=>a.email).sort((a,b)=>a.localeCompare(b));}
+
+function render(){
+  const all=[...state.agents.values()];
+  const counts={active:0,inactive:0,removed:0,all:all.length};
+  for(const a of all) counts[a.status]=(counts[a.status]||0)+1;
+  $("#activeCount").textContent=counts.active;
+  $("#copyBtn").disabled=!counts.active;
+  document.querySelectorAll("[data-c]").forEach(el=>el.textContent=counts[el.dataset.c]??0);
+  document.querySelectorAll(".chip").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.f===state.filter)));
+
+  const open=state.flags.filter(f=>f.status!=="resolved");
+  $("#review").hidden=!open.length;
+  $("#flagList").innerHTML=open.map(f=>`
+    <div class="flag">
+      <div class="txt">
+        <div><strong>Unmatched removal request:</strong> <span class="req">${esc(f.requested)}</span></div>
+        <div class="note">${esc(f.note)}</div>
+      </div>
+      <button class="btn small" data-act="resolveFlag" data-id="${esc(f.id)}">Mark reviewed</button>
+    </div>`).join("");
+
+  const q=state.q.trim().toLowerCase();
+  let rows=all.filter(a=>state.filter==="all"||a.status===state.filter);
+  if(q) rows=rows.filter(a=>a.email.includes(q)||(a.name||"").toLowerCase().includes(q));
+  rows.sort((a,b)=>a.email.localeCompare(b.email));
+  const label={active:"active",inactive:"inactive",removed:"removed",all:"total"}[state.filter];
+  $("#listLabel").textContent=`${rows.length} ${label}${q?` matching “${state.q.trim()}”`:""}`;
+
+  const ul=$("#roster");
+  if(!all.length){ul.innerHTML=`<li class="empty"><strong>No agents yet</strong>Add the first agent's email with the form above.</li>`;return;}
+  if(!rows.length){ul.innerHTML=`<li class="empty"><strong>No matches</strong>${q?"Try part of the email or the brokerage domain, or check another status filter.":"Nothing with this status right now."}</li>`;return;}
+  ul.innerHTML=rows.map(rowHTML).join("");
+}
+
+function rowHTML(a){
+  const k=a.id;
+  let meta=`<span class="pill ${a.status}">${a.status}</span>`;
+  if(a.name) meta+=`<span class="name">${esc(a.name)}</span>`;
+  if(a.status==="removed") meta+=`<span>Removed ${esc(fmtDate(a.removed_at))}${esc(byWho(a.updated_by))}</span>`;
+  else if(a.status==="inactive") meta+=`<span>Deactivated ${esc(fmtDate(a.deactivated_at))}${esc(byWho(a.updated_by))}</span>`;
+  else meta+=`<span>Added ${esc(fmtDate(a.added_at))}</span>`;
+  let acts=`<button class="btn small" data-act="editName" data-k="${k}">${a.name?"Edit name":"Add name"}</button>`;
+  if(a.status==="active") acts+=`<button class="btn small" data-act="askDeactivate" data-k="${k}">Deactivate</button><button class="btn small danger" data-act="askRemove" data-k="${k}">Remove</button>`;
+  else acts+=`<button class="btn small" data-act="restore" data-k="${k}">Restore to active</button>`;
+  if(a.status==="inactive") acts+=`<button class="btn small danger" data-act="askRemove" data-k="${k}">Remove</button>`;
+  let extra="";
+  if(state.confirm&&state.confirm.k===k){
+    const rm=state.confirm.kind==="remove";
+    extra=`<div class="confirm ${rm?"":"soft"}"><span>${rm?"Remove this agent from weekend coverage? The record stays with today's removal date.":"Pause this agent? They leave the BCC list until restored."}</span>
+      <button class="btn small ${rm?"danger":""}" data-act="${rm?"doRemove":"doDeactivate"}" data-k="${k}">${rm?"Yes, remove":"Yes, deactivate"}</button>
+      <button class="btn small" data-act="cancel">Cancel</button></div>`;
+  }
+  if(state.editing===k){
+    extra=`<form class="editname" data-k="${k}"><input id="edit-${k}" value="${esc(a.name||"")}" placeholder="Agent name" aria-label="Agent name"><button class="btn small primary" type="submit">Save</button><button class="btn small" type="button" data-act="cancel">Cancel</button></form>`;
+  }
+  return `<li class="row ${a.status}"><div class="who"><div class="email">${esc(a.email)}</div><div class="meta">${meta}</div></div><div class="actions">${acts}</div>${extra}</li>`;
+}
+
+function hist(a,action){const h=Array.isArray(a.history)?a.history.slice(-24):[];h.push({at:new Date().toISOString(),action,by:state.me});return h;}
+function friendlyError(error){
+  if(!error) return "That change didn't save. Check your connection and try again.";
+  if(error.code==="42501") return "Your account isn't on the team access list, so changes can't be saved.";
+  return "That change didn't save: "+(error.message||"unknown error")+".";
+}
+async function update(id,patch,okMsg){
+  const {error}=await sb.from("wcl_agents").update(patch).eq("id",id);
+  if(error){toast(friendlyError(error));return;}
+  if(okMsg) toast(okMsg);
+  await loadAll();
+}
+
+async function loadAll(){
+  const [ag,fl]=await Promise.all([
+    sb.from("wcl_agents").select("*").order("email").range(0,4999),
+    sb.from("wcl_flags").select("*")
+  ]);
+  if(ag.error){showGate("The roster didn't load",friendlyError(ag.error),true);return;}
+  hideGate();
+  const m=new Map(); for(const r of ag.data) m.set(r.id,r);
+  state.agents=m; state.flags=fl.data||[];
+  render();
+}
+function scheduleReload(){clearTimeout(reloadT);reloadT=setTimeout(loadAll,400);}
+
+document.addEventListener("click",async ev=>{
+  const b=ev.target.closest("[data-act]"); if(!b) return;
+  const act=b.dataset.act, k=b.dataset.k, a=k&&state.agents.get(k);
+  const now=new Date().toISOString();
+  if(act==="cancel"){state.confirm=null;state.editing=null;render();return;}
+  if(act==="askRemove"){state.confirm={k,kind:"remove"};state.editing=null;render();return;}
+  if(act==="askDeactivate"){state.confirm={k,kind:"deactivate"};state.editing=null;render();return;}
+  if(act==="editName"){state.editing=k;state.confirm=null;render();const i=document.getElementById("edit-"+k);i&&i.focus();return;}
+  if(act==="resolveFlag"){
+    const {error}=await sb.from("wcl_flags").update({status:"resolved",resolved_at:now,resolved_by:state.me}).eq("id",b.dataset.id);
+    if(error) toast(friendlyError(error)); else {toast("Marked reviewed.");loadAll();}
+    return;
+  }
+  if(!a) return;
+  if(act==="doRemove"){state.confirm=null;await update(k,{status:"removed",removed_at:now,updated_at:now,updated_by:state.me,history:hist(a,"removed")},"Removed. The record is kept under Removed.");}
+  if(act==="doDeactivate"){state.confirm=null;await update(k,{status:"inactive",deactivated_at:now,updated_at:now,updated_by:state.me,history:hist(a,"deactivated")},"Deactivated.");}
+  if(act==="restore"){await update(k,{status:"active",restored_at:now,updated_at:now,updated_by:state.me,history:hist(a,"restored")},"Restored to active.");$("#addMsg").textContent="";}
+});
+
+document.addEventListener("submit",async ev=>{
+  const f=ev.target.closest("form.editname"); if(!f) return;
+  ev.preventDefault();
+  const k=f.dataset.k,a=state.agents.get(k); if(!a) return;
+  const name=f.querySelector("input").value.trim().slice(0,120);
+  state.editing=null;
+  if(name===(a.name||"")){render();return;}
+  await update(k,{name,updated_at:new Date().toISOString(),updated_by:state.me,history:hist(a,"name updated")},"Name saved.");
+});
+
+$("#addForm").addEventListener("submit",async ev=>{
+  ev.preventDefault();
+  const msg=$("#addMsg"); msg.className="addmsg"; msg.textContent="";
+  const raw=$("#addEmail").value.trim(), name=$("#addName").value.trim().slice(0,120);
+  if(!EMAIL_RE.test(raw)){msg.className="addmsg err";msg.textContent="Enter one complete email address, like agent@brokerage.com.";$("#addEmail").focus();return;}
+  const email=raw.toLowerCase();
+  $("#addBtn").disabled=true;
+  try{
+    let existing=[...state.agents.values()].find(x=>x.email===email);
+    if(!existing){
+      const now=new Date().toISOString();
+      const {error}=await sb.from("wcl_agents").insert({email,name,status:"active",source:"Added in app",added_by:state.me,updated_by:state.me,updated_at:now,history:[{at:now,action:"added",by:state.me}]});
+      if(!error){msg.className="addmsg ok";msg.textContent=`Added ${email}.`;$("#addEmail").value="";$("#addName").value="";$("#addEmail").focus();await loadAll();return;}
+      if(error.code!=="23505"){msg.className="addmsg err";msg.textContent=friendlyError(error);return;}
+      const r=await sb.from("wcl_agents").select("*").eq("email",email).maybeSingle();
+      existing=r.data;
+    }
+    msg.className="addmsg err";
+    if(!existing||existing.status==="active"){msg.textContent=`${email} is already on the active list.`;return;}
+    msg.innerHTML=`${esc(email)} is already on record as ${esc(existing.status)}${existing.removed_at?" (removed "+esc(fmtDate(existing.removed_at))+")":""}. `;
+    const btn=document.createElement("button");btn.type="button";btn.className="btn small";btn.textContent="Restore to active";btn.dataset.act="restore";btn.dataset.k=existing.id;msg.appendChild(btn);
+    if(!state.agents.has(existing.id)){state.agents.set(existing.id,existing);}
+  }finally{$("#addBtn").disabled=false;}
+});
+
+$("#search").addEventListener("input",e=>{state.q=e.target.value;render();});
+document.querySelectorAll(".chip").forEach(c=>c.addEventListener("click",()=>{state.filter=c.dataset.f;render();}));
+
+$("#copyBtn").addEventListener("click",async()=>{
+  const list=activeList(), text=list.join("; ");
+  if(!text) return;
+  try{ await navigator.clipboard.writeText(text); toast(`Copied ${list.length} addresses. Paste into Outlook's Bcc field.`); }
+  catch(e){ const p=$("#copyFallback"),t=$("#fallbackText"); t.value=text; p.hidden=false; t.focus(); t.select(); }
+});
+$("#closeFallback").addEventListener("click",()=>{$("#copyFallback").hidden=true;});
+
+$("#signinForm").addEventListener("submit",async ev=>{
+  ev.preventDefault();
+  const email=$("#signinEmail").value.trim().toLowerCase(), m=$("#signinMsg");
+  if(!EMAIL_RE.test(email)){m.style.color="var(--bad)";m.textContent="Enter your full work email address.";return;}
+  $("#signinBtn").disabled=true;
+  const {error}=await sb.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname}});
+  $("#signinBtn").disabled=false;
+  if(error){m.style.color="var(--bad)";m.textContent="The link couldn't be sent: "+error.message;return;}
+  m.style.color="var(--ok)";m.textContent=`Check ${email} for a sign-in link. Open it on this device.`;
+});
+$("#signOutBtn").addEventListener("click",async()=>{await sb.auth.signOut();});
+
+function showSignedOut(){
+  if(channel){sb.removeChannel(channel);channel=null;}
+  state.agents=new Map();state.flags=[];state.me=null;
+  $("#app").hidden=true;$("#countBox").hidden=true;$("#copyBtn").hidden=true;$("#sessionBar").hidden=true;
+  hideGate();$("#signinForm").hidden=false;
+}
+async function showSignedIn(session){
+  state.me=(session.user.email||"").toLowerCase();
+  $("#signinForm").hidden=true;
+  $("#whoAmI").textContent="Signed in as "+state.me;$("#sessionBar").hidden=false;
+  const {data,error}=await sb.from("wcl_allowed_users").select("email").eq("email",state.me).maybeSingle();
+  if(error||!data){
+    $("#app").hidden=true;
+    showGate("You're signed in, but not on the team list",`Ask the list owner to add ${state.me} to the access list, then reload this page.`,true);
+    return;
+  }
+  $("#app").hidden=false;$("#countBox").hidden=false;$("#copyBtn").hidden=false;
+  await loadAll();
+  if(!channel){
+    channel=sb.channel("wcl-changes")
+      .on("postgres_changes",{event:"*",schema:"public",table:"wcl_agents"},scheduleReload)
+      .on("postgres_changes",{event:"*",schema:"public",table:"wcl_flags"},scheduleReload)
+      .subscribe();
+  }
+}
+
+function start(){
+  if(!window.supabase||SUPABASE_URL.includes("YOUR-PROJECT")){
+    showGate("Setup needed","Add your Supabase project URL and anon key at the top of the script in index.html.",true);return;
+  }
+  sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,detectSessionInUrl:true,flowType:"implicit"}});
+  let current=null;
+  sb.auth.onAuthStateChange((_evt,session)=>{
+    const id=session?.user?.id||null;
+    if(id===current) return;
+    current=id;
+    // Defer: Supabase calls made directly inside this callback can stall.
+    setTimeout(()=>{ if(session) showSignedIn(session); else showSignedOut(); },0);
+  });
+}
+start();
+})();
+</script>
+</body>
+</html>
