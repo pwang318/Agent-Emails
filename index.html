@@ -1,5 +1,4 @@
- 
-<!doctype html>
+ <!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -135,7 +134,7 @@ footer{color:var(--muted);font-size:12.5px;text-align:center}
     </div>
     <div class="count" id="countBox" hidden aria-live="polite"><b id="activeCount">–</b><span>active<br>recipients</span></div>
     <button class="btn primary copy-btn" id="copyBtn" hidden disabled>Copy BCC list</button>
-    <div class="session" id="sessionBar" hidden><span id="whoAmI"></span><button class="btn link" id="signOutBtn">Sign out</button></div>
+    <div class="session" id="sessionBar" hidden><span id="whoAmI"></span><button class="btn link" id="signOutBtn">Lock</button></div>
   </div>
 </header>
 
@@ -143,15 +142,19 @@ footer{color:var(--muted);font-size:12.5px;text-align:center}
 <main>
   <div id="gate" class="notice" hidden></div>
 
-  <!-- Sign-in -->
+  <!-- Team password -->
   <form class="signin" id="signinForm" hidden novalidate>
-    <h2>Sign in</h2>
-    <p>Enter your work email. We'll send you a one-time sign-in link. Only team members on the access list can open the roster.</p>
+    <h2>Enter the team password</h2>
+    <p>Ask your manager for the weekend coverage password. This browser will remember it.</p>
     <div class="field">
-      <label for="signinEmail">Work email</label>
-      <input id="signinEmail" type="email" inputmode="email" autocomplete="email" placeholder="you@company.com" required>
+      <label for="passInput">Team password</label>
+      <input id="passInput" type="password" autocomplete="current-password" required>
     </div>
-    <button class="btn primary" id="signinBtn" type="submit">Email me a sign-in link</button>
+    <div class="field">
+      <label for="nameInput">Your first name (optional)</label>
+      <input id="nameInput" type="text" autocomplete="given-name" placeholder="Shown next to changes you make">
+    </div>
+    <button class="btn primary" id="signinBtn" type="submit">Open the list</button>
     <p id="signinMsg" role="status"></p>
   </form>
 
@@ -216,28 +219,29 @@ footer{color:var(--muted);font-size:12.5px;text-align:center}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.js"></script>
 <script>
-/* ===== SETUP: paste your Supabase project values here =====
-   Supabase dashboard > Project Settings > API.
-   The anon (public) key is designed to be visible in web pages;
-   the database security rules are what keep the roster private. */
+/* ===== Supabase project (public values, safe to share) ===== */
 const SUPABASE_URL = "https://uclucbdkjqyqdvifyptx.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_gjEeEFwnF_cWhGoT6IRKoQ_dP33ijwH";
-/* ========================================================== */
+/* The roster itself is only returned when the team password is correct. */
 
 (()=>{
 const $=s=>document.querySelector(s);
-const state={agents:new Map(),flags:[],filter:"active",q:"",confirm:null,editing:null,me:null};
+const state={agents:new Map(),flags:[],filter:"active",q:"",confirm:null,editing:null,pass:"",me:""};
 const EMAIL_RE=/^[^\s@;,<>"]+@[^\s@;,<>"]+\.[^\s@;,<>"]{2,}$/;
-let sb=null, channel=null, reloadT=null;
+const LS_PASS="wcl_pass", LS_NAME="wcl_name";
+let sb=null, pollT=null;
 
+function lsGet(k){try{return localStorage.getItem(k)||"";}catch(e){return "";}}
+function lsSet(k,v){try{v?localStorage.setItem(k,v):localStorage.removeItem(k);}catch(e){}}
 function fmtDate(iso){ if(!iso) return ""; const d=new Date(iso); return isNaN(d)?"":d.toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"}); }
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
-function byWho(e){ if(!e||e==="import") return ""; return " by "+e.split("@")[0]; }
+function byWho(n){ return (!n||n==="import")?"":" by "+n; }
 let toastT;
 function toast(msg){const t=$("#toast");t.textContent=msg;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2600);}
 function showGate(title,body,err){const g=$("#gate");g.className="notice"+(err?" err":"");g.innerHTML=`<h2>${esc(title)}</h2><p>${esc(body)}</p>`;g.hidden=false;}
 function hideGate(){$("#gate").hidden=true;}
 function activeList(){return [...state.agents.values()].filter(a=>a.status==="active").map(a=>a.email).sort((a,b)=>a.localeCompare(b));}
+function isWrongPass(error){return error&&(error.code==="28P01"||/wrong_password/.test(error.message||""));}
 
 function render(){
   const all=[...state.agents.values()];
@@ -296,49 +300,43 @@ function rowHTML(a){
   return `<li class="row ${a.status}"><div class="who"><div class="email">${esc(a.email)}</div><div class="meta">${meta}</div></div><div class="actions">${acts}</div>${extra}</li>`;
 }
 
-function hist(a,action){const h=Array.isArray(a.history)?a.history.slice(-24):[];h.push({at:new Date().toISOString(),action,by:state.me});return h;}
-function friendlyError(error){
-  if(!error) return "That change didn't save. Check your connection and try again.";
-  if(error.code==="42501") return "Your account isn't on the team access list, so changes can't be saved.";
-  return "That change didn't save: "+(error.message||"unknown error")+".";
+function handleError(error){
+  if(isWrongPass(error)){ lock("The team password changed. Enter the new one."); return; }
+  toast("That change didn't save: "+((error&&error.message)||"check your connection and try again")+".");
 }
-async function update(id,patch,okMsg){
-  const {error}=await sb.from("wcl_agents").update(patch).eq("id",id);
-  if(error){toast(friendlyError(error));return;}
+
+async function loadAll(){
+  const {data,error}=await sb.rpc("wcl_list",{p:state.pass});
+  if(error){ if(isWrongPass(error)) lock("The team password changed. Enter the new one."); else showGate("The roster didn't load",(error.message||"Check your connection")+". Reload to try again.",true); return false; }
+  hideGate();
+  const m=new Map(); for(const r of (data.agents||[])) m.set(r.id,r);
+  state.agents=m; state.flags=data.flags||[];
+  render(); return true;
+}
+
+async function act(id,action,okMsg,name){
+  const {error}=await sb.rpc("wcl_update",{p:state.pass,p_id:id,p_action:action,p_name:name??null,p_by:state.me||null});
+  if(error){handleError(error);return;}
   if(okMsg) toast(okMsg);
   await loadAll();
 }
 
-async function loadAll(){
-  const [ag,fl]=await Promise.all([
-    sb.from("wcl_agents").select("*").order("email").range(0,4999),
-    sb.from("wcl_flags").select("*")
-  ]);
-  if(ag.error){showGate("The roster didn't load",friendlyError(ag.error),true);return;}
-  hideGate();
-  const m=new Map(); for(const r of ag.data) m.set(r.id,r);
-  state.agents=m; state.flags=fl.data||[];
-  render();
-}
-function scheduleReload(){clearTimeout(reloadT);reloadT=setTimeout(loadAll,400);}
-
 document.addEventListener("click",async ev=>{
   const b=ev.target.closest("[data-act]"); if(!b) return;
-  const act=b.dataset.act, k=b.dataset.k, a=k&&state.agents.get(k);
-  const now=new Date().toISOString();
-  if(act==="cancel"){state.confirm=null;state.editing=null;render();return;}
-  if(act==="askRemove"){state.confirm={k,kind:"remove"};state.editing=null;render();return;}
-  if(act==="askDeactivate"){state.confirm={k,kind:"deactivate"};state.editing=null;render();return;}
-  if(act==="editName"){state.editing=k;state.confirm=null;render();const i=document.getElementById("edit-"+k);i&&i.focus();return;}
-  if(act==="resolveFlag"){
-    const {error}=await sb.from("wcl_flags").update({status:"resolved",resolved_at:now,resolved_by:state.me}).eq("id",b.dataset.id);
-    if(error) toast(friendlyError(error)); else {toast("Marked reviewed.");loadAll();}
+  const a_=b.dataset.act, k=b.dataset.k, a=k&&state.agents.get(k);
+  if(a_==="cancel"){state.confirm=null;state.editing=null;render();return;}
+  if(a_==="askRemove"){state.confirm={k,kind:"remove"};state.editing=null;render();return;}
+  if(a_==="askDeactivate"){state.confirm={k,kind:"deactivate"};state.editing=null;render();return;}
+  if(a_==="editName"){state.editing=k;state.confirm=null;render();const i=document.getElementById("edit-"+k);i&&i.focus();return;}
+  if(a_==="resolveFlag"){
+    const {error}=await sb.rpc("wcl_resolve_flag",{p:state.pass,p_id:b.dataset.id,p_by:state.me||null});
+    if(error) handleError(error); else {toast("Marked reviewed.");loadAll();}
     return;
   }
   if(!a) return;
-  if(act==="doRemove"){state.confirm=null;await update(k,{status:"removed",removed_at:now,updated_at:now,updated_by:state.me,history:hist(a,"removed")},"Removed. The record is kept under Removed.");}
-  if(act==="doDeactivate"){state.confirm=null;await update(k,{status:"inactive",deactivated_at:now,updated_at:now,updated_by:state.me,history:hist(a,"deactivated")},"Deactivated.");}
-  if(act==="restore"){await update(k,{status:"active",restored_at:now,updated_at:now,updated_by:state.me,history:hist(a,"restored")},"Restored to active.");$("#addMsg").textContent="";}
+  if(a_==="doRemove"){state.confirm=null;await act(k,"remove","Removed. The record is kept under Removed.");}
+  if(a_==="doDeactivate"){state.confirm=null;await act(k,"deactivate","Deactivated.");}
+  if(a_==="restore"){await act(k,"restore","Restored to active.");$("#addMsg").textContent="";}
 });
 
 document.addEventListener("submit",async ev=>{
@@ -348,7 +346,7 @@ document.addEventListener("submit",async ev=>{
   const name=f.querySelector("input").value.trim().slice(0,120);
   state.editing=null;
   if(name===(a.name||"")){render();return;}
-  await update(k,{name,updated_at:new Date().toISOString(),updated_by:state.me,history:hist(a,"name updated")},"Name saved.");
+  await act(k,"rename","Name saved.",name);
 });
 
 $("#addForm").addEventListener("submit",async ev=>{
@@ -356,23 +354,17 @@ $("#addForm").addEventListener("submit",async ev=>{
   const msg=$("#addMsg"); msg.className="addmsg"; msg.textContent="";
   const raw=$("#addEmail").value.trim(), name=$("#addName").value.trim().slice(0,120);
   if(!EMAIL_RE.test(raw)){msg.className="addmsg err";msg.textContent="Enter one complete email address, like agent@brokerage.com.";$("#addEmail").focus();return;}
-  const email=raw.toLowerCase();
   $("#addBtn").disabled=true;
   try{
-    let existing=[...state.agents.values()].find(x=>x.email===email);
-    if(!existing){
-      const now=new Date().toISOString();
-      const {error}=await sb.from("wcl_agents").insert({email,name,status:"active",source:"Added in app",added_by:state.me,updated_by:state.me,updated_at:now,history:[{at:now,action:"added",by:state.me}]});
-      if(!error){msg.className="addmsg ok";msg.textContent=`Added ${email}.`;$("#addEmail").value="";$("#addName").value="";$("#addEmail").focus();await loadAll();return;}
-      if(error.code!=="23505"){msg.className="addmsg err";msg.textContent=friendlyError(error);return;}
-      const r=await sb.from("wcl_agents").select("*").eq("email",email).maybeSingle();
-      existing=r.data;
-    }
+    const {data,error}=await sb.rpc("wcl_add",{p:state.pass,p_email:raw,p_name:name,p_by:state.me||null});
+    if(error){ if(isWrongPass(error)){lock("The team password changed. Enter the new one.");return;} msg.className="addmsg err"; msg.textContent=/invalid_email/.test(error.message||"")?"That doesn't look like a complete email address.":"That didn't save: "+error.message; return; }
+    const ag=data.agent;
+    if(data.result==="added"){msg.className="addmsg ok";msg.textContent=`Added ${ag.email}.`;$("#addEmail").value="";$("#addName").value="";$("#addEmail").focus();await loadAll();return;}
     msg.className="addmsg err";
-    if(!existing||existing.status==="active"){msg.textContent=`${email} is already on the active list.`;return;}
-    msg.innerHTML=`${esc(email)} is already on record as ${esc(existing.status)}${existing.removed_at?" (removed "+esc(fmtDate(existing.removed_at))+")":""}. `;
-    const btn=document.createElement("button");btn.type="button";btn.className="btn small";btn.textContent="Restore to active";btn.dataset.act="restore";btn.dataset.k=existing.id;msg.appendChild(btn);
-    if(!state.agents.has(existing.id)){state.agents.set(existing.id,existing);}
+    if(ag.status==="active"){msg.textContent=`${ag.email} is already on the active list.`;return;}
+    msg.innerHTML=`${esc(ag.email)} is already on record as ${esc(ag.status)}${ag.removed_at?" (removed "+esc(fmtDate(ag.removed_at))+")":""}. `;
+    const btn=document.createElement("button");btn.type="button";btn.className="btn small";btn.textContent="Restore to active";btn.dataset.act="restore";btn.dataset.k=ag.id;msg.appendChild(btn);
+    if(!state.agents.has(ag.id)) state.agents.set(ag.id,ag);
   }finally{$("#addBtn").disabled=false;}
 });
 
@@ -387,65 +379,48 @@ $("#copyBtn").addEventListener("click",async()=>{
 });
 $("#closeFallback").addEventListener("click",()=>{$("#copyFallback").hidden=true;});
 
+function lock(message){
+  clearInterval(pollT); pollT=null;
+  state.pass=""; lsSet(LS_PASS,""); state.agents=new Map(); state.flags=[];
+  $("#app").hidden=true;$("#countBox").hidden=true;$("#copyBtn").hidden=true;$("#sessionBar").hidden=true;
+  hideGate();
+  $("#nameInput").value=state.me;
+  const m=$("#signinMsg"); m.style.color="var(--bad)"; m.textContent=message||"";
+  $("#signinForm").hidden=false; $("#passInput").value=""; $("#passInput").focus();
+}
+async function unlock(){
+  $("#signinForm").hidden=true;
+  $("#whoAmI").textContent=state.me?("Changes noted as "+state.me):"";
+  $("#sessionBar").hidden=false;
+  $("#app").hidden=false;$("#countBox").hidden=false;$("#copyBtn").hidden=false;
+  const ok=await loadAll();
+  if(ok&&!pollT) pollT=setInterval(()=>{ if(document.visibilityState==="visible") loadAll(); },30000);
+}
+
 $("#signinForm").addEventListener("submit",async ev=>{
   ev.preventDefault();
-  const email=$("#signinEmail").value.trim().toLowerCase(), m=$("#signinMsg");
-  if(!EMAIL_RE.test(email)){m.style.color="var(--bad)";m.textContent="Enter your full work email address.";return;}
-  $("#signinBtn").disabled=true;
-  const {error}=await sb.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname}});
+  const pass=$("#passInput").value, m=$("#signinMsg");
+  const name=$("#nameInput").value.trim().slice(0,40);
+  if(!pass){m.style.color="var(--bad)";m.textContent="Enter the team password.";return;}
+  $("#signinBtn").disabled=true; m.style.color="var(--muted)"; m.textContent="Checking…";
+  const {data,error}=await sb.rpc("wcl_check",{p:pass});
   $("#signinBtn").disabled=false;
-  if(error){m.style.color="var(--bad)";m.textContent="The link couldn't be sent: "+error.message;return;}
-  m.style.color="var(--ok)";m.textContent=`Check ${email} for a sign-in link. Open it on this device.`;
+  if(error){m.style.color="var(--bad)";m.textContent="Couldn't reach the database: "+error.message;return;}
+  if(!data){m.style.color="var(--bad)";m.textContent="That password isn't right. Check with your manager.";$("#passInput").select();return;}
+  m.textContent="";
+  state.pass=pass; state.me=name; lsSet(LS_PASS,pass); lsSet(LS_NAME,name);
+  unlock();
 });
-$("#signOutBtn").addEventListener("click",async()=>{await sb.auth.signOut();});
-
-function showSignedOut(){
-  if(channel){sb.removeChannel(channel);channel=null;}
-  state.agents=new Map();state.flags=[];state.me=null;
-  $("#app").hidden=true;$("#countBox").hidden=true;$("#copyBtn").hidden=true;$("#sessionBar").hidden=true;
-  hideGate();$("#signinForm").hidden=false;
-}
-async function showSignedIn(session){
-  state.me=(session.user.email||"").toLowerCase();
-  $("#signinForm").hidden=true;
-  $("#whoAmI").textContent="Signed in as "+state.me;$("#sessionBar").hidden=false;
-  const {data,error}=await sb.from("wcl_allowed_users").select("email").eq("email",state.me).maybeSingle();
-  if(error||!data){
-    $("#app").hidden=true;
-    showGate("You're signed in, but not on the team list",`Ask the list owner to add ${state.me} to the access list, then reload this page.`,true);
-    return;
-  }
-  $("#app").hidden=false;$("#countBox").hidden=false;$("#copyBtn").hidden=false;
-  await loadAll();
-  if(!channel){
-    channel=sb.channel("wcl-changes")
-      .on("postgres_changes",{event:"*",schema:"public",table:"wcl_agents"},scheduleReload)
-      .on("postgres_changes",{event:"*",schema:"public",table:"wcl_flags"},scheduleReload)
-      .subscribe();
-  }
-}
+$("#signOutBtn").addEventListener("click",()=>lock(""));
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible"&&state.pass) loadAll(); });
 
 function start(){
-  if(SUPABASE_URL.includes("YOUR-PROJECT")){
-    showGate("Setup needed","Add your Supabase project URL and key at the top of the script in index.html.",true);return;
-  }
-  if(!window.supabase){
-    showGate("The page couldn't load","A required library didn't load. Check your internet connection or ad blocker, then reload.",true);return;
-  }
-  sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,detectSessionInUrl:true,flowType:"implicit"}});
-  let current; // undefined until the first auth event, so a signed-out start still shows sign-in
-  const apply=session=>{
-    const id=session?.user?.id||null;
-    if(id===current) return;
-    current=id;
-    // Defer: Supabase calls made directly inside the auth callback can stall.
-    setTimeout(()=>{ (session?showSignedIn(session):showSignedOut()); },0);
-  };
-  sb.auth.onAuthStateChange((_evt,session)=>apply(session));
-  sb.auth.getSession().then(({data})=>apply(data.session)).catch(()=>apply(null));
+  if(!window.supabase){ showGate("The page couldn't load","A required library didn't load. Check your internet connection or ad blocker, then reload.",true); return; }
+  sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+  state.me=lsGet(LS_NAME); state.pass=lsGet(LS_PASS);
+  if(state.pass) unlock(); else lock("");
 }
-window.addEventListener("error",e=>{showGate("Something went wrong",(e.message||"Unknown error")+" — send this message to whoever set up the page.",true);});
-window.addEventListener("unhandledrejection",e=>{showGate("Something went wrong",String((e.reason&&e.reason.message)||e.reason||"Unknown error")+" — send this message to whoever set up the page.",true);});
+window.addEventListener("error",e=>{showGate("Something went wrong",(e.message||"Unknown error")+". Send this message to whoever set up the page.",true);});
 start();
 })();
 </script>
